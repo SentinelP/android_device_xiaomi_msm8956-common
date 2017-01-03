@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015 The CyanogenMod Project
- *               2017 The LineageOS Project
+ * Copyright (C) 2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class ProximitySensor implements SensorEventListener {
     public ProximitySensor(Context context) {
         mContext = context;
         mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY, false);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
     }
 
     @Override
@@ -67,9 +67,9 @@ public class ProximitySensor implements SensorEventListener {
         if (Utils.handwaveGestureEnabled(mContext) && Utils.pocketGestureEnabled(mContext)) {
             return true;
         } else if (Utils.handwaveGestureEnabled(mContext)) {
-            return delta < HANDWAVE_MAX_DELTA_NS;
+            return delta < POCKET_DELTA_NS;
         } else if (Utils.pocketGestureEnabled(mContext)) {
-            return delta >= POCKET_MIN_DELTA_NS;
+            return delta >= POCKET_DELTA_NS;
         }
         return false;
     }

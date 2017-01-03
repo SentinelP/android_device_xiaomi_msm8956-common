@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015 The CyanogenMod Project
- *               2017 The LineageOS Project
+ * Copyright (C) 2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,6 @@ public final class Utils {
     private static final boolean DEBUG = false;
 
     private static final String DOZE_INTENT = "com.android.systemui.doze.pulse";
-
-    protected static final String CATEG_PROX_SENSOR = "proximity_sensor";
 
     protected static final String GESTURE_PICK_UP_KEY = "gesture_pick_up";
     protected static final String GESTURE_HAND_WAVE_KEY = "gesture_hand_wave";

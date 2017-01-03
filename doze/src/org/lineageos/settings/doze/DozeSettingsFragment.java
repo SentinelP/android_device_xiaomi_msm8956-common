@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 The CyanogenMod Project
- *               2017 The LineageOS Project
+ * Copyright (C) 2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,11 +44,42 @@ import android.widget.TextView;
 public class DozeSettingsFragment extends PreferenceFragment implements OnPreferenceChangeListener,
         CompoundButton.OnCheckedChangeListener {
 
-    private TextView mTextView;
+    private SharedPreferences mPreferences;
 
     private SwitchPreference mPickUpPreference;
     private SwitchPreference mHandwavePreference;
     private SwitchPreference mPocketPreference;
+
+    private ContentObserver mDozeObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            super.onChange(selfChange);
+
+            updateSwitches(Utils.isDozeEnabled(getActivity()));
+            DozeReceiver.notifyChanged(getActivity());
+        }
+    };
+
+    static String getDozeSummary(Context context) {
+        if (Utils.isDozeEnabled(context)) {
+            return context.getString(R.string.ambient_display_summary_on);
+        }
+        return context.getString(R.string.ambient_display_summary_off);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        final View view = LayoutInflater.from(getContext()).inflate(R.layout.doze, container, false);
+        ((ViewGroup) view).addView(super.onCreateView(inflater, container, savedInstanceState));
+        return view;
+    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -62,13 +93,15 @@ public class DozeSettingsFragment extends PreferenceFragment implements OnPrefer
             showHelp();
         }
 
-        boolean dozeEnabled = Utils.isDozeEnabled(getActivity());
-
-        PreferenceCategory proximitySensorCategory =
-                (PreferenceCategory) getPreferenceScreen().findPreference(Utils.CATEG_PROX_SENSOR);
-
         mPickUpPreference = (SwitchPreference) findPreference(Utils.GESTURE_PICK_UP_KEY);
-        mPickUpPreference.setEnabled(dozeEnabled);
+        mPickUpPreference.setOnPreferenceChangeListener(this);
+
+        mHandwavePreference = (SwitchPreference) findPreference(Utils.GESTURE_HAND_WAVE_KEY);
+        mHandwavePreference.setOnPreferenceChangeListener(this);
+
+        mPocketPreference = (SwitchPreference) findPreference(Utils.GESTURE_POCKET_KEY);
+        mPocketPreference.setOnPreferenceChangeListener(this);
+    }
 
         mHandwavePreference = (SwitchPreference) findPreference(Utils.GESTURE_HAND_WAVE_KEY);
         mHandwavePreference.setEnabled(dozeEnabled);
@@ -102,7 +135,7 @@ public class DozeSettingsFragment extends PreferenceFragment implements OnPrefer
 
         View switchBar = view.findViewById(R.id.switch_bar);
         Switch switchWidget = (Switch) switchBar.findViewById(android.R.id.switch_widget);
-        switchWidget.setChecked(dozeEnabled);
+        switchWidget.setChecked(Utils.isDozeEnabled(getActivity()));
         switchWidget.setOnCheckedChangeListener(this);
 
         switchBar.setOnClickListener(new View.OnClickListener() {
