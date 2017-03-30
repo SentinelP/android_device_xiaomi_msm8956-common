@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 The CyanogenMod Project
- * Copyright (C) 2017 The LineageOS Project
+ *               2017 The LineageOS Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 
 package org.lineageos.settings.doze;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -44,42 +43,11 @@ import android.widget.TextView;
 public class DozeSettingsFragment extends PreferenceFragment implements OnPreferenceChangeListener,
         CompoundButton.OnCheckedChangeListener {
 
-    private SharedPreferences mPreferences;
+    private TextView mTextView;
 
     private SwitchPreference mPickUpPreference;
     private SwitchPreference mHandwavePreference;
     private SwitchPreference mPocketPreference;
-
-    private ContentObserver mDozeObserver = new ContentObserver(new Handler()) {
-        @Override
-        public void onChange(boolean selfChange) {
-            super.onChange(selfChange);
-
-            updateSwitches(Utils.isDozeEnabled(getActivity()));
-            DozeReceiver.notifyChanged(getActivity());
-        }
-    };
-
-    static String getDozeSummary(Context context) {
-        if (Utils.isDozeEnabled(context)) {
-            return context.getString(R.string.ambient_display_summary_on);
-        }
-        return context.getString(R.string.ambient_display_summary_off);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = LayoutInflater.from(getContext()).inflate(R.layout.doze, container, false);
-        ((ViewGroup) view).addView(super.onCreateView(inflater, container, savedInstanceState));
-        return view;
-    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -93,26 +61,16 @@ public class DozeSettingsFragment extends PreferenceFragment implements OnPrefer
             showHelp();
         }
 
+        boolean dozeEnabled = Utils.isDozeEnabled(getActivity());
+
         mPickUpPreference = (SwitchPreference) findPreference(Utils.GESTURE_PICK_UP_KEY);
-        mPickUpPreference.setOnPreferenceChangeListener(this);
-
-        mHandwavePreference = (SwitchPreference) findPreference(Utils.GESTURE_HAND_WAVE_KEY);
-        mHandwavePreference.setOnPreferenceChangeListener(this);
-
-        mPocketPreference = (SwitchPreference) findPreference(Utils.GESTURE_POCKET_KEY);
-        mPocketPreference.setOnPreferenceChangeListener(this);
-    }
+        mPickUpPreference.setEnabled(dozeEnabled);
 
         mHandwavePreference = (SwitchPreference) findPreference(Utils.GESTURE_HAND_WAVE_KEY);
         mHandwavePreference.setEnabled(dozeEnabled);
 
         mPocketPreference = (SwitchPreference) findPreference(Utils.GESTURE_POCKET_KEY);
         mPocketPreference.setEnabled(dozeEnabled);
-
-        // Hide proximity sensor related features if the device doesn't support them
-        if (!Utils.getProxCheckBeforePulse(getActivity())) {
-            getPreferenceScreen().removePreference(proximitySensorCategory);
-        }
     }
 
     @Override
@@ -135,7 +93,7 @@ public class DozeSettingsFragment extends PreferenceFragment implements OnPrefer
 
         View switchBar = view.findViewById(R.id.switch_bar);
         Switch switchWidget = (Switch) switchBar.findViewById(android.R.id.switch_widget);
-        switchWidget.setChecked(Utils.isDozeEnabled(getActivity()));
+        switchWidget.setChecked(dozeEnabled);
         switchWidget.setOnCheckedChangeListener(this);
 
         switchBar.setOnClickListener(new View.OnClickListener() {
@@ -162,15 +120,6 @@ public class DozeSettingsFragment extends PreferenceFragment implements OnPrefer
         mPickUpPreference.setEnabled(b);
         mHandwavePreference.setEnabled(b);
         mPocketPreference.setEnabled(b);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            getActivity().onBackPressed();
-            return true;
-        }
-        return false;
     }
 
     private static class HelpDialogFragment extends DialogFragment {
